@@ -1,6 +1,7 @@
 package com.duminda.homebeacon
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -299,10 +300,25 @@ class MainActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            lp.setMargins(0, 0, 0, dpToPx(24))
+            lp.setMargins(0, 0, 0, dpToPx(12))
             layoutParams = lp
         }
         container.addView(btnSave)
+
+        // Button: Enable Autostart (Xiaomi / Redmi / Background execution)
+        val btnAutostart = Button(this).apply {
+            text = "⚡ Enable Autostart (Xiaomi / Background)"
+            setOnClickListener {
+                openAutostartSettings()
+            }
+            val lp = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            lp.setMargins(0, 0, 0, dpToPx(24))
+            layoutParams = lp
+        }
+        container.addView(btnAutostart)
 
         // Status Card/TextView
         tvStatus = TextView(this).apply {
@@ -325,9 +341,9 @@ class MainActivity : AppCompatActivity() {
             text = "Trigger SMS Format:\n" +
                     "Send from any trusted number your exact Trigger Phrase (e.g. 'Where are you' or 'WHERE 1234').\n" +
                     "Case-insensitive. Matching is 100% customizable.\n\n" +
-                    "Transparency Note:\n" +
-                    "A visible notification is posted on this device every time a location reply is sent. " +
-                    "This app functions solely on GPS and normal SMS without mobile data or Wi-Fi."
+                    "Background Execution Note:\n" +
+                    "On Xiaomi/Redmi/HyperOS devices, tap 'Enable Autostart' above and set Battery Saver to 'No restrictions'. " +
+                    "This ensures the SMS receiver runs when the app is closed."
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
             setTextColor(getSubtextColor())
         }
@@ -446,6 +462,20 @@ class MainActivity : AppCompatActivity() {
         navContainer.addView(radioGroupTheme)
 
         // System Settings Links
+        val btnAutostartNav = Button(this).apply {
+            text = "⚡ Enable Autostart"
+            setOnClickListener {
+                openAutostartSettings()
+            }
+            val lp = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            lp.setMargins(0, 0, 0, dpToPx(12))
+            layoutParams = lp
+        }
+        navContainer.addView(btnAutostartNav)
+
         val btnSystemSettings = Button(this).apply {
             text = "⚙ App System Settings"
             setOnClickListener {
@@ -493,6 +523,31 @@ class MainActivity : AppCompatActivity() {
         navContainer.addView(tvFooter)
 
         return navContainer
+    }
+
+    private fun openAutostartSettings() {
+        val intents = listOf(
+            Intent().setComponent(ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")),
+            Intent().setComponent(ComponentName("com.letv.android.letvsafe", "com.letv.android.letvsafe.AutostartManageActivity")),
+            Intent().setComponent(ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity")),
+            Intent().setComponent(ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")),
+            Intent().setComponent(ComponentName("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity")),
+            Intent().setComponent(ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")),
+            Intent().setComponent(ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity")),
+            Intent().setComponent(ComponentName("com.samsung.android.looper", "com.samsung.android.sm.ui.battery.BatteryActivity")),
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = "package:$packageName".toUri()
+            }
+        )
+
+        for (intent in intents) {
+            try {
+                startActivity(intent)
+                Toast.makeText(this, "Enable Autostart for Home Beacon", Toast.LENGTH_LONG).show()
+                return
+            } catch (_: Exception) {
+            }
+        }
     }
 
     private fun applyThemeMode(mode: Int) {
