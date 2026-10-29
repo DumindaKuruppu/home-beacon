@@ -3,15 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.shalitha.homebeacon"
-    compileSdk {
-        version = release(37)
-    }
+    namespace = "com.duminda.homebeacon"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.shalitha.homebeacon"
-        minSdk = 24
-        targetSdk = 37
+        applicationId = "com.duminda.homebeacon"
+        minSdk = 26
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -20,10 +18,11 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
-            }
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -33,11 +32,9 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
+    implementation(libs.androidx.activity.ktx)
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
