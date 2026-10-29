@@ -46,6 +46,24 @@ class Prefs(context: Context) {
         return removed
     }
 
+    var triggerPhrase: String
+        get() {
+            val saved = prefs.getString(KEY_TRIGGER_PHRASE, null)
+            if (saved != null) return saved
+            val word = triggerWord
+            val code = secretCode
+            return if (word.isNotBlank() && code.isNotBlank()) "$word $code" else if (code.isNotBlank()) code else "WHERE 1234"
+        }
+        set(value) {
+            prefs.edit().putString(KEY_TRIGGER_PHRASE, value.trim()).apply()
+        }
+
+    var triggerWord: String
+        get() = prefs.getString(KEY_TRIGGER_WORD, "WHERE") ?: "WHERE"
+        set(value) {
+            prefs.edit().putString(KEY_TRIGGER_WORD, value.trim().uppercase()).apply()
+        }
+
     var secretCode: String
         get() = prefs.getString(KEY_SECRET_CODE, "") ?: ""
         set(value) {
@@ -66,6 +84,8 @@ class Prefs(context: Context) {
 
     companion object {
         private const val KEY_TRUSTED_NUMBERS = "trusted_numbers_set"
+        private const val KEY_TRIGGER_PHRASE = "trigger_phrase"
+        private const val KEY_TRIGGER_WORD = "trigger_word"
         private const val KEY_SECRET_CODE = "secret_code"
         private const val KEY_REPLIES_ENABLED = "replies_enabled"
         private const val KEY_THEME_MODE = "theme_mode"

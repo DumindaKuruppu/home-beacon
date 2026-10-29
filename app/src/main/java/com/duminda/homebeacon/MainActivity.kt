@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etNewTrustedNumber: EditText
     private lateinit var llTrustedNumbersContainer: LinearLayout
     private lateinit var tvTrustedCountBadge: TextView
+    private lateinit var etTriggerPhrase: EditText
     private lateinit var etSecretCode: EditText
     private lateinit var swEnableReplies: Switch
     private lateinit var tvStatus: TextView
@@ -237,9 +238,34 @@ class MainActivity : AppCompatActivity() {
         }
         container.addView(llTrustedNumbersContainer)
 
-        // Section: Secret Code
+        // Section: Trigger Phrase
+        val tvTriggerPhraseLabel = TextView(this).apply {
+            text = "Trigger Phrase / Command:"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setTypeface(typeface, Typeface.BOLD)
+            setTextColor(getTextColor())
+        }
+        container.addView(tvTriggerPhraseLabel)
+
+        etTriggerPhrase = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            hint = "e.g. Where are you or WHERE 1234"
+            setText(prefs.triggerPhrase)
+            setTextColor(getTextColor())
+            setHintTextColor(getSubtextColor())
+            setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8))
+            val lp = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            lp.setMargins(0, dpToPx(4), 0, dpToPx(16))
+            layoutParams = lp
+        }
+        container.addView(etTriggerPhrase)
+
+        // Section: Secret Code (Optional secondary code)
         val tvCodeLabel = TextView(this).apply {
-            text = "Secret Code:"
+            text = "Secret Code (Optional Backup Code):"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setTypeface(typeface, Typeface.BOLD)
             setTextColor(getTextColor())
@@ -297,8 +323,8 @@ class MainActivity : AppCompatActivity() {
         // Help text
         val tvHelp = TextView(this).apply {
             text = "Trigger SMS Format:\n" +
-                    "Send from any trusted number: WHERE <secret code>\n" +
-                    "(Case-insensitive, e.g. WHERE 1234)\n\n" +
+                    "Send from any trusted number your exact Trigger Phrase (e.g. 'Where are you' or 'WHERE 1234').\n" +
+                    "Case-insensitive. Matching is 100% customizable.\n\n" +
                     "Transparency Note:\n" +
                     "A visible notification is posted on this device every time a location reply is sent. " +
                     "This app functions solely on GPS and normal SMS without mobile data or Wi-Fi."
@@ -548,6 +574,7 @@ class MainActivity : AppCompatActivity() {
             prefs.addTrustedNumber(input)
             etNewTrustedNumber.text.clear()
         }
+        prefs.triggerPhrase = etTriggerPhrase.text.toString().trim()
         prefs.secretCode = etSecretCode.text.toString().trim()
         refreshTrustedNumbersList()
         Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show()
@@ -624,6 +651,7 @@ class MainActivity : AppCompatActivity() {
 
         val repliesOn = prefs.isRepliesEnabled
         val trustedCount = prefs.trustedNumbers.size
+        val triggerPhrase = prefs.triggerPhrase.ifBlank { "(None)" }
 
         val sb = StringBuilder()
         sb.append("Permission & Configuration Status:\n\n")
@@ -632,6 +660,7 @@ class MainActivity : AppCompatActivity() {
         sb.append(if (bgLocationGranted) "✔ Location \"Allow all the time\"" else "✘ Location \"Allow all the time\"").append("\n")
         sb.append(if (batteryUnrestricted) "✔ Battery unrestricted" else "✘ Battery unrestricted").append("\n")
         sb.append(if (repliesOn) "✔ Location replies: ON" else "✘ Location replies: OFF").append("\n")
+        sb.append("✔ Trigger Phrase: '$triggerPhrase'").append("\n")
         sb.append("✔ Trusted numbers configured: $trustedCount")
 
         tvStatus.text = sb.toString()

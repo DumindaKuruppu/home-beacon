@@ -45,9 +45,8 @@ class SmsReceiver : BroadcastReceiver() {
         }
 
         val trustedNumbers = prefs.trustedNumbers
-        val secretCode = prefs.secretCode
-        if (trustedNumbers.isEmpty() || secretCode.isBlank()) {
-            Log.d(TAG, "No trusted numbers or secret code is blank in settings. Ignoring SMS.")
+        if (trustedNumbers.isEmpty()) {
+            Log.d(TAG, "No trusted numbers configured in settings. Ignoring SMS.")
             return
         }
 
@@ -67,10 +66,20 @@ class SmsReceiver : BroadcastReceiver() {
         }
 
         val fullBody = msgs.joinToString("") { it.messageBody ?: "" }.trim()
-        val expectedTrigger = "WHERE ${secretCode.trim()}"
-        Log.d(TAG, "SMS body: '$fullBody', Expected: '$expectedTrigger'")
+        val triggerPhrase = prefs.triggerPhrase.trim()
+        val secretCode = prefs.secretCode.trim()
+        val triggerWord = prefs.triggerWord.trim()
 
-        if (!fullBody.equals(expectedTrigger, ignoreCase = true)) {
+        val isTriggerMatch = when {
+            triggerPhrase.isNotBlank() && fullBody.equals(triggerPhrase, ignoreCase = true) -> true
+            secretCode.isNotBlank() && fullBody.equals(secretCode, ignoreCase = true) -> true
+            secretCode.isNotBlank() && triggerWord.isNotBlank() && fullBody.equals("$triggerWord $secretCode", ignoreCase = true) -> true
+            else -> false
+        }
+
+        Log.d(TAG, "SMS body: '$fullBody', Configured Phrase: '$triggerPhrase', Match: $isTriggerMatch")
+
+        if (!isTriggerMatch) {
             Log.d(TAG, "SMS body does not match trigger. Ignoring.")
             return
         }
