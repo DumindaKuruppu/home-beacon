@@ -44,10 +44,10 @@ class SmsReceiver : BroadcastReceiver() {
             return
         }
 
-        val trustedNumber = prefs.trustedNumber
+        val trustedNumbers = prefs.trustedNumbers
         val secretCode = prefs.secretCode
-        if (trustedNumber.isBlank() || secretCode.isBlank()) {
-            Log.d(TAG, "Trusted number or secret code is blank in settings. Ignoring SMS.")
+        if (trustedNumbers.isEmpty() || secretCode.isBlank()) {
+            Log.d(TAG, "No trusted numbers or secret code is blank in settings. Ignoring SMS.")
             return
         }
 
@@ -58,10 +58,11 @@ class SmsReceiver : BroadcastReceiver() {
         }
 
         val senderNumber = msgs.firstOrNull()?.originatingAddress ?: return
-        Log.d(TAG, "SMS received from sender: $senderNumber (Trusted saved: $trustedNumber)")
+        Log.d(TAG, "SMS received from sender: $senderNumber (Trusted numbers: $trustedNumbers)")
 
-        if (!isNumberMatch(senderNumber, trustedNumber)) {
-            Log.d(TAG, "Sender $senderNumber does not match trusted number $trustedNumber. Ignoring.")
+        val isMatch = trustedNumbers.any { trusted -> isNumberMatch(senderNumber, trusted) }
+        if (!isMatch) {
+            Log.d(TAG, "Sender $senderNumber does not match any trusted number in $trustedNumbers. Ignoring.")
             return
         }
 

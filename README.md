@@ -1,6 +1,6 @@
 # Home Beacon
 
-Home Beacon is a consent-based native Android family location tool built with Kotlin and plain Android Views (no Compose). When a configured trusted phone number sends a specific SMS command, the app automatically replies via SMS with the device's current GPS coordinates and a Google Maps link.
+Home Beacon is a consent-based native Android family location tool built with Kotlin and plain Android Views. When a configured trusted phone number sends a specific SMS command, the app automatically replies via SMS with the device's current GPS coordinates and a Google Maps link.
 
 Home Beacon works entirely offline without mobile data or Wi-Fi (GPS and normal SMS only).
 
@@ -8,15 +8,18 @@ Home Beacon works entirely offline without mobile data or Wi-Fi (GPS and normal 
 
 ## Deliverables & Features
 
+- **Navigation Drawer (☰)**: Slide-out drawer menu providing quick access to App System Settings, Battery Optimization toggles, and Theme preferences.
+- **Dark Mode Support**: Seamless support for Light Mode, Dark Mode, and System Default theme modes.
+- **Multiple Trusted Numbers**: Add and manage multiple trusted family phone numbers. Trigger SMS received from any listed trusted number will be processed.
 - **Trigger Command**: `WHERE <secret code>` (case-insensitive, trimmed).
 - **Format of SMS Reply**:
   ```text
-  Lat 6.927079, Lon 79.861244 (±12 m, just now)
+  Lat 6.927079, Lon 79.861244 (+/-12 m, just now)
   https://maps.google.com/?q=6.927079,79.861244
   ```
   *(If fallback to last known location is used, says "N min ago" instead of "just now". If no GPS fix is available, replies "No GPS fix yet. Please try again in a minute.")*
 - **Full Transparency**: Every single SMS reply posts a visible notification on the device ("Location sent", "Replied to <number> with your current location").
-- **Zero Background Tracking**: No foreground service, no polling, no background location tracking, no network calls, and no analytics. The app stays idle until the trigger SMS is received.
+- **Zero Background Tracking**: No foreground service, no polling, no background location tracking, no network calls, and no analytics. The app stays idle until a trigger SMS is received.
 
 ---
 
@@ -68,7 +71,7 @@ Xiaomi / HyperOS / MIUI devices enforce strict background broadcast restrictions
 
 ### Prerequisites
 - Target device running Home Beacon with:
-  - Trusted Phone Number configured (e.g. `+94771234567` or `0771234567`).
+  - At least one Trusted Phone Number configured (e.g. `+94771234567` or `0771234567`).
   - Secret Code configured (e.g. `1234`).
   - Switch set to **Location replies ON**.
   - All permissions granted via "Save & set up permissions" button (SMS, Fine Location, "Allow all the time" Background Location, Post Notifications, Battery Unrestricted).
@@ -78,7 +81,7 @@ Xiaomi / HyperOS / MIUI devices enforce strict background broadcast restrictions
 ### Test Case 1: Valid Trigger SMS (Device Locked, Data & Wi-Fi OFF)
 1. Turn **OFF** Mobile Data and Wi-Fi on the target device (leave GPS / Location enabled).
 2. Lock the target device screen.
-3. From the trusted phone number, send the SMS:
+3. From any configured trusted phone number, send the SMS:
    ```text
    WHERE 1234
    ```
@@ -86,7 +89,7 @@ Xiaomi / HyperOS / MIUI devices enforce strict background broadcast restrictions
    - Target device receives the SMS, requests a fresh high-accuracy GPS fix (or falls back within 8s to last location if GPS signal is weak).
    - Replies via SMS with:
      ```text
-     Lat <latitude>, Lon <longitude> (±<accuracy> m, just now)
+     Lat <latitude>, Lon <longitude> (+/-<accuracy> m, just now)
      https://maps.google.com/?q=<latitude>,<longitude>
      ```
    - Target device displays a visible status bar notification:
@@ -96,7 +99,7 @@ Xiaomi / HyperOS / MIUI devices enforce strict background broadcast restrictions
 ---
 
 ### Test Case 2: Untrusted Sender Number
-1. From any phone number **different** from the saved trusted number, send:
+1. From any phone number **not included** in the saved trusted numbers list, send:
    ```text
    WHERE 1234
    ```
@@ -106,7 +109,7 @@ Xiaomi / HyperOS / MIUI devices enforce strict background broadcast restrictions
 ---
 
 ### Test Case 3: Incorrect Secret Code
-1. From the trusted phone number, send:
+1. From a trusted phone number, send:
    ```text
    WHERE wrongcode
    ```
@@ -117,7 +120,7 @@ Xiaomi / HyperOS / MIUI devices enforce strict background broadcast restrictions
 
 ### Test Case 4: Location Replies Disabled
 1. In Home Beacon, toggle **Location replies ON** to **OFF**.
-2. From the trusted phone number, send:
+2. From a trusted phone number, send:
    ```text
    WHERE 1234
    ```
